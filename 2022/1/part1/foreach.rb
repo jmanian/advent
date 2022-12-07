@@ -2,7 +2,7 @@ this_elf = 0
 highest_elf = 0
 lines_processed = 0
 
-File.foreach('data.txt', chomp: true) do |line|
+File.foreach('../data.txt', chomp: true) do |line|
   if line.empty?
     highest_elf = [this_elf, highest_elf].max
     this_elf = 0
