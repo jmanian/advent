@@ -14,9 +14,7 @@ module Common
     moves.each do |num_crates, from, to|
       from_stack = stacks[from - 1]
       to_stack = stacks[to - 1]
-      num_crates.times do
-        to_stack << from_stack.pop
-      end
+      move_crates(num_crates, from_stack, to_stack)
     end
 
     stacks.map(&:last).join
@@ -47,8 +45,26 @@ module Common
   end
 end
 
-class Part
+class CM9000
   include Common
+
+  def move_crates(num_crates, from, to)
+    num_crates.times do
+      to << from.pop
+    end
+  end
 end
 
-puts Part.new.run
+class CM9001
+  include Common
+
+  def move_crates(num_crates, from, to)
+    to.push(*from.pop(num_crates))
+  end
+end
+
+puts CM9000.new.run
+# VJSFHWGFT
+
+puts CM9001.new.run
+# LCTQFBVZV
