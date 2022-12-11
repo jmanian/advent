@@ -6,8 +6,9 @@ module Common
   attr_accessor :stacks, :moves
 
   def initialize
-    ingest_crates
-    ingest_moves
+    crates_data, moves_data = File.read('data.txt').split("\n\n")
+    ingest_crates(crates_data)
+    ingest_moves(moves_data)
   end
 
   def run
@@ -20,8 +21,8 @@ module Common
     stacks.map(&:last).join
   end
 
-  def ingest_crates
-    lines = File.readlines('crates.txt', chomp: true).reverse
+  def ingest_crates(data)
+    lines = data.split("\n")[...-1].reverse
 
     num_stacks = (lines.first.size + 1) / 4
     @stacks = Array.new(num_stacks) { [] }
@@ -36,8 +37,8 @@ module Common
     end
   end
 
-  def ingest_moves
-    lines = File.readlines('moves.txt', chomp: true)
+  def ingest_moves(data)
+    lines = data.split("\n")
 
     @moves = lines.map do |line|
       line.match(MOVE_REGEX).captures.map(&:to_i)
