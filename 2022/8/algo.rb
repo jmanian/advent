@@ -1,20 +1,19 @@
 require 'set'
+require 'matrix'
 
 module Common
   attr_reader :trees, :m, :n
 
   def initialize
-    @trees = {}
-
     lines = File.readlines('data.txt', chomp: true)
     @m = lines.length
     @n = lines.first.length
 
-    lines.each_with_index do |line, i|
-      line.each_char.with_index do |tree, j|
-        trees[[i, j]] = tree.to_i
+    @trees = Matrix[
+      *lines.map do |line|
+        line.chars.map(&:to_i)
       end
-    end
+    ]
   end
 end
 
@@ -29,28 +28,28 @@ class A
   end
 
   def run
-    m.times do |i|
-      traverse(i: i)
-      traverse(i: i, reverse: true)
+    trees.row_vectors.each_with_index do |row, i|
+      traverse(row, i: i)
+      traverse(row, i: i, reverse: true)
     end
 
-    n.times do |j|
-      traverse(j: j)
-      traverse(j: j, reverse: true)
+    trees.column_vectors.each_with_index do |col, j|
+      traverse(col, j: j)
+      traverse(col, j: j, reverse: true)
     end
 
     visible_trees.size
   end
 
-  def traverse(i: nil, j: nil, reverse: false)
+  def traverse(vector, i: nil, j: nil, reverse: false)
     max = -1
-    endpoint = i ? n : m
-    iter = endpoint.times
-    iter = iter.reverse_each if reverse
 
-    iter.each do |x|
+    iter = vector.to_a
+    iter = iter.reverse if reverse
+
+    iter.each_with_index do |tree, x|
+      x = iter.length - 1 - x if reverse
       coordinates = [i || x, j || x]
-      tree = trees[coordinates]
 
       if tree > max
         visible_trees << coordinates
@@ -64,32 +63,32 @@ class B
   include Common
 
   def run
-    (m.times.to_a).product(n.times.to_a).map do |i, j|
-      check_tree(i, j)
+    trees.each_with_index.map do |tree, i, j|
+      check_tree(tree, i, j)
     end.max
   end
 
-  def check_tree(i, j)
-    check_direction(i, j, 1, 0) *
-      check_direction(i, j, -1, 0) *
-      check_direction(i, j, 0, 1) *
-      check_direction(i, j, 0, -1)
+  def check_tree(tree, i, j)
+    row = trees.row(i)
+    col = trees.column(j)
+
+    lines = [
+      row[(j + 1)...].to_a,
+      row[...j].to_a.reverse,
+      col[(i + 1)...].to_a,
+      col[...i].to_a.reverse
+    ]
+
+    lines.map do |line|
+      check_line_of_sight(tree, line)
+    end.reduce(&:*)
   end
 
-  def check_direction(i, j, x, y)
-    height = trees[[i, j]]
-    start_i = i
-    start_j = j
+  def check_line_of_sight(tree, line)
+    line.reduce(0) do |count, tr|
+      break count + 1 if tr >= tree
 
-    loop do
-      tree = trees[[i, j]]
-      if i == 0 || i == m - 1 || j == 0 || j == n - 1 ||
-        (tree >= height && [i, j] != [start_i, start_j])
-        return (i - start_i) * x + (j - start_j) * y
-      end
-
-      i += x
-      j += y
+      count + 1
     end
   end
 end
