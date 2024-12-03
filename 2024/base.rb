@@ -1,4 +1,8 @@
 module Base
+  SAMPLE_FILENAME = "sample.txt".freeze
+  ALT_SAMPLE_FILENAME = "sample_b.txt".freeze
+  DATA_FILENAME = "data.txt".freeze
+
   def initialize(test_mode)
     @test_mode = test_mode
     load_data
@@ -6,10 +10,14 @@ module Base
 
   def filename
     if @test_mode
-      "sample.txt"
+      alt_sample? ? ALT_SAMPLE_FILENAME : SAMPLE_FILENAME
     else
-      "data.txt"
+      DATA_FILENAME
     end
+  end
+
+  def alt_sample?
+    false
   end
 
   # Allow running the script from any working directory by building
